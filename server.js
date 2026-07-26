@@ -18,6 +18,7 @@ if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
 const uid = () => crypto.randomBytes(6).toString('hex');
 
+// ===== NOTES =====
 app.get('/api/notes', (_req, res) => res.json(notes));
 app.post('/api/notes', (req, res) => {
   const note = { id: uid(), title: req.body.title || 'Untitled', content: req.body.content || '', updatedAt: new Date().toISOString() };
@@ -31,6 +32,7 @@ app.put('/api/notes/:id', (req, res) => {
 });
 app.delete('/api/notes/:id', (req, res) => { notes = notes.filter(n => n.id !== req.params.id); res.json({ ok: true }); });
 
+// ===== TASKS =====
 app.get('/api/tasks', (_req, res) => res.json(tasks));
 app.post('/api/tasks', (req, res) => {
   const task = { id: uid(), title: req.body.title, status: req.body.status || 'todo' };
@@ -43,6 +45,7 @@ app.put('/api/tasks/:id', (req, res) => {
 });
 app.delete('/api/tasks/:id', (req, res) => { tasks = tasks.filter(t => t.id !== req.params.id); res.json({ ok: true }); });
 
+// ===== CODE EXECUTION =====
 app.post('/api/execute/python', (req, res) => {
   if (!req.body.code) return res.status(400).json({ error: 'No code' });
   const filepath = path.join(tempDir, `py_${uid()}.py`);
@@ -74,6 +77,7 @@ app.post('/api/execute/shell', (req, res) => {
   });
 });
 
+// ===== URL SHORTENER =====
 app.post('/api/shorten', (req, res) => {
   if (!req.body.url) return res.status(400).json({ error: 'URL required' });
   const code = crypto.randomBytes(4).toString('hex');
@@ -86,6 +90,7 @@ app.get('/s/:code', (req, res) => {
   res.status(404).send('URL not found');
 });
 
+// ===== WEATHER =====
 app.get('/api/weather', async (req, res) => {
   const city = req.query.city;
   if (!city) return res.status(400).json({ error: 'City required' });
@@ -93,9 +98,10 @@ app.get('/api/weather', async (req, res) => {
     const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
     const data = await response.json();
     res.json(data);
-  } catch (e) { res.status(500).json({ error: 'Weather fetch failed' }); }
+  } catch (e) { res.status(500).json({ error: 'Weather fetch failed: ' + e.message }); }
 });
 
+// ===== AI CHAT =====
 app.post('/api/chat', async (req, res) => {
   const message = req.body.message || '';
   const apiKey = process.env.OPENAI_API_KEY;
@@ -109,4 +115,26 @@ app.post('/api/chat', async (req, res) => {
     } catch {}
   }
   const l = message.toLowerCase();
-  let reply = `🤖
+  let reply = `🤖 You said: "${message}"\n\nI'm Super Hub AI in demo mode. Add OPENAI_API_KEY env var for GPT power!`;
+  if (l.includes('hello')) reply = "Hello! 👋 Welcome to Super Hub AI!";
+  if (l.includes('help')) reply = "I can help with coding, general knowledge, jokes, and more!";
+  if (l.includes('joke')) reply = "Why do programmers prefer dark mode? Because light attracts bugs! 🐛😄";
+  res.json({ reply });
+});
+
+// ===== SPA FALLBACK =====
+app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/') || req.path.startsWith('/s/')) return res.status(404).json({ error: 'Not found' });
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// ===== START =====
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`SUPER_HUB_READY:${PORT}`);
+  console.log(`PYTHON_CHECK: starting`);
+  exec('python3 --version', (err, stdout) => {
+    console.log(`PYTHON: ${err ? 'NOT_FOUND' : stdout.trim()}`);
+  });
+  console.log(`NODE: ${process.version}`);
+});
