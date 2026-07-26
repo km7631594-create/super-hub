@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ Super Hub - All-in-One Platform</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0a1a; --bg2: #111128; --card: #161636; --hover: #1e1e48;
+  --text: #e8e8f0; --muted: #9090b0; --border: #252550; --accent: #6366f1;
+}
+body { background: var(--bg); color: var(--text); font-family: -apple-system, 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; }
+.app { display: flex; height: 100vh; }
+/* SIDEBAR */
+.sidebar { background: var(--bg2); border-right: 1px solid var(--border); width: 240px; display: flex; flex-direction: column; transition: width .3s; }
+.sidebar.closed { width: 64px; }
+.sb-header { padding: 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.logo { color: #6366f1; font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+.sb-toggle { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
+.sb-nav { flex: 1; overflow-y: auto; padding: 8px; }
+.nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 0; border-radius: 8px; cursor: pointer; color: var(--muted); font-size: 13px; transition: all .2s; }
+.nav-item:hover { background: var(--hover); color: var(--text); }
+.nav-item.active { background: var(--accent); color: #fff; }
+.nav-item .emoji { font-size: 18px; min-width: 20px; }
+.sidebar.closed .nav-label, .sidebar.closed .logo span { display: none; }
+/* MAIN */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.topbar { padding: 16px 24px; border-bottom: 1px solid var(--border); background: var(--bg2); display: flex; justify-content: space-between; align-items: center; }
+.topbar h2 { font-size: 18px; }
+.badge { background: var(--card); padding: 4px 12px; border-radius: 20px; font-size: 12px; color: var(--muted); }
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+/* DASHBOARD */
+.hero { text-align: center; padding: 40px 20px; }
+.hero h1 { font-size: 42px; background: linear-gradient(135deg, #6366f1, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 12px; }
+.hero p { color: var(--muted); max-width: 600px; margin: 0 auto; font-size: 15px; }
+.stats { display: flex; justify-content: center; gap: 40px; margin-top: 30px; }
+.stat { text-align: center; }
+.stat-n { font-size: 32px; font-weight: 700; background: linear-gradient(135deg, #6366f1, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.stat-l { color: var(--muted); font-size: 13px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-top: 32px; }
+.card { background: var(--card); border-radius: 12px; padding: 20px; border-top: 3px solid var(--accent); cursor: pointer; transition: all .2s; }
+.card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(99,102,241,0.2); }
+.card-icon { font-size: 32px; margin-bottom: 12px; }
+.card h3 { font-size: 15px; margin-bottom: 6px; }
+.card p { color: var(--muted); font-size: 12px; }
+/* COMMON */
+input, textarea, select { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+input:focus, textarea:focus { border-color: var(--accent); }
+button { cursor: pointer; border: none; font-family: inherit; }
+.btn { background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all .2s; }
+.btn:hover { filter: brightness(1.15); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-danger { background: #ef4444; }
+.btn-success { background: #10b981; }
+/* CHAT */
+.chat { display: flex; flex-direction: column; height: calc(100vh - 130px); max-width: 800px; margin: 0 auto; }
+.chat-msgs { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { display: flex; gap: 10px; max-width: 80%; }
+.msg.user { align-self: flex-end; flex-direction: row-reverse; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--card); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.bubble { background: var(--card); padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; white-space: pre-wrap; }
+.msg.user .bubble { background: var(--accent); }
+.chat-input { display: flex; gap: 10px; padding: 12px; background: var(--bg2); border-radius: 12px; margin-top: 8px; }
+.chat-input input { flex: 1; }
+/* NOTES */
+.notes { display: flex; height: calc(100vh - 130px); gap: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.notes-side { width: 260px; background: var(--bg2); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.notes-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+.note-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+.note-item:hover { background: var(--hover); }
+.note-item.active { background: var(--accent); color: #fff; }
+.note-item small { display: block; color: var(--muted); font-size: 11px; margin-top: 4px; }
+.note-item.active small { color: #ddd; }
+.notes-edit { flex: 1; display: flex; flex-direction: column; }
+.notes-tools { padding: 12px; background: var(--bg2); display: flex; gap: 8px; align-items: center; }
+.notes-tools input { flex: 1; font-weight: 600; }
+.notes-content { flex: 1; padding: 16px; background: var(--bg); border: none; color: var(--text); font-size: 14px; line-height: 1.6; resize: none; outline: none; font-family: inherit; }
+.empty { display: flex; align-items: center; justify-content: center; color: var(--muted); flex: 1; font-size: 15px; }
+/* TASKS */
+.task-input { display: flex; gap: 10px; margin-bottom: 20px; }
+.task-input input { flex: 1; }
+.cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.col { background: var(--card); border-radius: 12px; border-top: 3px solid; padding: 16px; min-height: 300px; }
+.col h3 { font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; }
+.col h3 span { background: var(--hover); padding: 2px 10px; border-radius: 12px; font-size: 11px; }
+.tlist { display: flex; flex-direction: column; gap: 8px; }
+.tcard { background: var(--hover); padding: 10px 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+.tacts { display: flex; gap: 4px; }
+.tacts button { background: none; padding: 2px 6px; font-size: 14px; }
+/* PLAYGROUND / RUNNERS */
+.runner { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.tabs { display: flex; background: var(--bg2); border-bottom: 1px solid var(--border); }
+.tabs button { padding: 12px 20px; background: none; color: var(--muted); font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; }
+.tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tabs .run-btn { margin-left: auto; margin-right: 8px; background: #10b981; color: #fff; padding: 8px 16px; border-radius: 6px; align-self: center; }
+.editor { width: 100%; height: 350px; padding: 16px; background: #1a1a2e; color: #e8e8f0; border: none; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; resize: vertical; outline: none; tab-size: 2; }
+.output { min-height: 150px; padding: 16px; background: #0d0d1a; color: #10b981; font-family: 'Consolas', monospace; font-size: 13px; white-space: pre-wrap; overflow-x: auto; }
+.preview { width: 100%; height: 400px; background: #fff; border: none; }
+/* WEATHER */
+.weather-wrap { max-width: 500px; margin: 0 auto; }
+.w-search { display: flex; gap: 10px; margin-bottom: 20px; }
+.w-search input { flex: 1; }
+.w-card { background: linear-gradient(135deg, #1e3a5f, #162544); border-radius: 16px; padding: 30px; }
+.w-city { font-size: 22px; margin-bottom: 6px; text-align: center; }
+.w-temp { font-size: 64px; font-weight: 700; text-align: center; }
+.w-desc { text-align: center; opacity: 0.8; font-size: 15px; margin-bottom: 20px; }
+.w-details { display: flex; justify-content: center; gap: 24px; font-size: 14px; }
+/* CALCULATOR */
+.calc { max-width: 340px; margin: 0 auto; }
+.calc-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.calc-tabs button { flex: 1; padding: 10px; background: var(--card); color: var(--muted); border-radius: 8px; font-weight: 600; font-size: 13px; }
+.calc-tabs button.active { background: var(--accent); color: #fff; }
+.calc-disp { background: var(--card); padding: 20px; border-radius: 12px; margin-bottom: 12px; text-align: right; }
+.calc-eq { color: var(--muted); font-size: 13px; min-height: 18px; }
+.calc-v { font-size: 36px; font-weight: 700; word-break: break-all; }
+.calc-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.calc-btns button { padding: 18px; background: var(--card); color: var(--text); border-radius: 10px; font-size: 18px; font-weight: 500; transition: all .15s; }
+.calc-btns button:hover { background: var(--hover); }
+.calc-btns .clear { color: #ef4444; }
+.calc-btns .eq { background: var(--accent); color: #fff; }
+.conv { display: flex; flex-direction: column; gap: 12px; }
+.conv-row { display: flex; gap: 10px; }
+.conv-row input { flex: 2; }
+.conv-row select { flex: 1; }
+.conv-arrow { text-align: center; font-size: 24px; }
+.conv-res { text-align: center; padding: 14px; background: var(--card); border-radius: 8px; font-size: 16px; font-weight: 600; }
+/* URL / PASS */
+.url-wrap, .pass-wrap { max-width: 550px; margin: 0 auto; }
+.url-wrap h3, .pass-wrap h3 { margin-bottom: 20px; font-size: 22px; }
+.url-input { display: flex; gap: 10px; margin-bottom: 16px; }
+.url-input input { flex: 1; }
+.url-result { display: flex; gap: 10px; padding: 14px; background: var(--card); border-radius: 8px; border: 1px solid #10b98144; }
+.url-result input { flex: 1; color: #10b981; background: transparent; border: none; }
+.pass-disp { display: flex; gap: 8px; margin-bottom: 16px; }
+.pass-disp input { flex: 1; color: #10b981; font-size: 18px; font-family: monospace; }
+.pass-strength { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.strength-bar { flex: 1; height: 6px; background: var(--card); border-radius: 3px; overflow: hidden; }
+.strength-bar div { height: 100%; transition: all .3s; border-radius: 3px; }
+.pass-opts { display: flex; flex-direction: column; gap: 12px; }
+.pass-opts label { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.pass-opts input[type=range] { flex: 1; }
+/* MARKDOWN */
+.md-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; height: calc(100vh - 130px); }
+.md-pane { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.md-pane h4 { padding: 10px 14px; background: var(--bg2); font-size: 12px; color: var(--muted); border-bottom: 1px solid var(--border); }
+.md-pane textarea { flex: 1; padding: 16px; background: #1a1a2e; color: var(--text); border: none; resize: none; outline: none; font-family: 'Consolas', monospace; font-size: 13px; line-height: 1.6; }
+.md-preview { flex: 1; padding: 16px; overflow-y: auto; line-height: 1.7; font-size: 14px; }
+.md-preview h1 { font-size: 24px; color: var(--accent); margin-bottom: 10px; }
+.md-preview h2 { font-size: 20px; margin: 14px 0 8px; }
+.md-preview h3 { font-size: 16px; margin: 10px 0 6px; }
+.md-preview pre { background: #1a1a2e; padding: 12px; border-radius: 8px; overflow-x: auto; margin: 8px 0; }
+.md-preview code { font-family: monospace; font-size: 13px; }
+.md-preview blockquote { border-left: 3px solid var(--accent); padding-left: 12px; color: var(--muted); margin: 8px 0; }
+.md-preview a { color: #6366f1; }
+.md-preview ul, .md-preview ol { margin-left: 24px; margin-bottom: 8px; }
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #363670; }
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .cols { grid-template-columns: 1fr; }
+  .md-wrap { grid-template-columns: 1fr; }
+  .notes { flex-direction: column; }
+  .notes-side { width: 100%; max-height: 200px; }
+  .hero h1 { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<script>
+const API = '';
+const APPS = [
+  { id: 'home',       name: 'Dashboard',      emoji: '🏠', color: '#6366f1', desc: 'Main overview' },
+  { id: 'chat',       name: 'AI Chat',        emoji: '🤖', color: '#8b5cf6', desc: 'AI assistant' },
+  { id: 'notes',      name: 'Notes',          emoji: '📝', color: '#ec4899', desc: 'Save your notes' },
+  { id: 'tasks',      name: 'Task Board',     emoji: '📋', color: '#f59e0b', desc: 'Kanban tasks' },
+  { id: 'playground', name: 'Code Playground',emoji: '🎨', color: '#10b981', desc: 'HTML/CSS/JS live' },
+  { id: 'python',     name: 'Python Runner',  emoji: '🐍', color: '#3b82f6', desc: 'Run Python online' },
+  { id: 'javascript', name: 'JS Runner',      emoji: '⚡', color: '#eab308', desc: 'Run Node.js code' },
+  { id: 'shell',      name: 'Shell Terminal', emoji: '💻', color: '#ef4444', desc: 'Execute commands' },
+  { id: 'weather',    name: 'Weather',        emoji: '🌤️', color: '#06b6d4', desc: 'Live weather' },
+  { id: 'calc',       name: 'Calculator',     emoji: '🔢', color: '#f97316', desc: 'Calc + Currency' },
+  { id: 'shortener',  name: 'URL Shortener',  emoji: '🔗', color: '#a855f7', desc: 'Shorten URLs' },
+  { id: 'password',   name: 'PassGen',        emoji: '🔐', color: '#14b8a6', desc: 'Strong passwords' },
+  { id: 'markdown',   name: 'MD Preview',     emoji: '👁️', color: '#e11d48', desc: 'Markdown editor' },
+];
+
+let state = { activeApp: 'home', sidebarOpen: true };
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <aside class="sidebar ${state.sidebarOpen ? '' : 'closed'}">
+      <div class="sb-header">
+        <div class="logo">⚡ <span>Super Hub</span></div>
+        <button class="sb-toggle" onclick="toggleSidebar()">☰</button>
+      </div>
+      <nav class="sb-nav">
+        ${APPS.map(a => `
+          <div class="nav-item ${state.activeApp === a.id ? 'active' : ''}" onclick="setApp('${a.id}')">
+            <span class="emoji">${a.emoji}</span>
+            <span class="nav-label">${a.name}</span>
+          </div>
+        `).join('')}
+      </nav>
+    </aside>
+    <main class="main">
+      <header class="topbar">
+        <h2>${APPS.find(a => a.id === state.activeApp)?.emoji} ${APPS.find(a => a.id === state.activeApp)?.name}</h2>
+        <div class="badge">v1.0 • ${APPS.length} Apps</div>
+      </header>
+      <div class="content" id="content"></div>
+    </main>
+  `;
+  renderApp();
+}
+
+function toggleSidebar() { state.sidebarOpen = !state.sidebarOpen; render(); }
+function setApp(id) { state.activeApp = id; render(); }
+
+function renderApp() {
+  const c = document.getElementById('content');
+  const fn = APP_RENDERERS[state.activeApp];
+  if (fn) fn(c);
+}
+
+const APP_RENDERERS = {
+  home: renderHome,
+  chat: renderChat,
+  notes: renderNotes,
+  tasks: renderTasks,
+  playground: renderPlayground,
+  python: (c) => renderRunner(c, '🐍 Python Runner', 'python', 'print("Hello from Python! 🐍")\nfor i in range(5):\n    print(f"Count: {i}")'),
+  javascript: (c) => renderRunner(c, '⚡ JS Runner', 'javascript', 'console.log("Hello from JS!");\nfor (let i = 0; i < 5; i++) console.log("Count:", i);'),
+  shell: (c) => renderRunner(c, '💻 Shell Terminal', 'shell', 'echo "Hello from Shell!"\ndate\npwd\nls -la 2>/dev/null | head -5'),
+  weather: renderWeather,
+  calc: renderCalc,
+  shortener: renderShortener,
+  password: renderPassword,
+  markdown: renderMarkdown,
+};
+
+// ==================== HOME ====================
+function renderHome(c) {
+  c.innerHTML = `
+    <div class="hero">
+      <h1>⚡ Welcome to Super Hub</h1>
+      <p>Your all-in-one platform — AI Chat, Code Playground, Python Runner, Notes, Tasks and more. Everything you need, in one beautiful place.</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-n">${APPS.length}</div><div class="stat-l">Apps</div></div>
+        <div class="stat"><div class="stat-n">100%</div><div class="stat-l">Free</div></div>
+        <div class="stat"><div class="stat-n">OSS</div><div class="stat-l">Open Source</div></div>
+      </div>
+    </div>
+    <div class="grid">
+      ${APPS.filter(a => a.id !== 'home').map(a => `
+        <div class="card" style="border-top-color:${a.color}" onclick="setApp('${a.id}')">
+          <div class="card-icon">${a.emoji}</div>
+          <h3>${a.name}</h3>
+          <p>${a.desc}</p>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ==================== CHAT ====================
+let chatMsgs = [{ role: 'bot', text: "Hey! 👋 I'm Super Hub AI. Ask me anything!" }];
+function renderChat(c) {
+  c.innerHTML = `
+    <div class="chat">
+      <div class="chat-msgs" id="chatMsgs"></div>
+      <div class="chat-input">
+        <input id="chatInput" placeholder="Ask me anything..." onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="btn" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+  `;
+  updateChat();
+}
+function updateChat() {
+  const box = document.getElementById('chatMsgs');
+  if (!box) return;
+  box.innerHTML = chatMsgs.map(m => `
+    <div class="msg ${m.role}">
+      <div class="avatar">${m.role === 'bot' ? '🤖' : '👤'}</div>
+      <div class="bubble">${m.text.replace(/</g, '&lt;')}</div>
+    </div>
+  `).join('');
+  box.scrollTop = box.scrollHeight;
+}
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+  chatMsgs.push({ role: 'user', text: msg });
+  chatMsgs.push({ role: 'bot', text: 'Thinking...' });
+  updateChat();
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: msg }) });
+    const d = await r.json();
+    chatMsgs[chatMsgs.length-1] = { role: 'bot', text: d.reply };
+  } catch (e) {
+    chatMsgs[chatMsgs.length-1] = { role: 'bot', text: '⚠️ Connection error.' };
+  }
+  updateChat();
+}
+
+// ==================== NOTES ====================
+let notesData = [], activeNote = null;
+async function renderNotes(c) {
+  try { notesData = await (await fetch('/api/notes')).json(); } catch { notesData = []; }
+  c.innerHTML = `
+    <div class="notes">
+      <div class="notes-side">
+        <button class="btn" onclick="newNote()">+ New Note</button>
+        <div class="notes-list" id="notesList"></div>
+      </div>
+      <div class="notes-edit" id="notesEdit"></div>
+    </div>
+  `;
+  drawNotesList();
+  drawNoteEditor();
+}
+function drawNotesList() {
+  const el = document.getElementById('notesList');
+  if (!el) return;
+  el.innerHTML = notesData.map(n => `
+    <div class="note-item ${activeNote?.id === n.id ? 'active' : ''}" onclick="selectNote('${n.id}')">
+      <div>${(n.title || 'Untitled').replace(/</g,'&lt;')}</div>
+      <small>${new Date(n.updatedAt).toLocaleDateString()}</small>
+    </div>
+  `).join('') || '<div style="color:var(--muted);padding:12px;font-size:13px">No notes yet</div>';
+}
+function drawNoteEditor() {
+  const el = document.getElementById('notesEdit');
+  if (!el) return;
+  if (!activeNote) { el.innerHTML = '<div class="empty">📝 Select or create a note</div>'; return; }
+  el.innerHTML = `
+    <div class="notes-tools">
+      <input id="noteTitle" value="${(activeNote.title||'').replace(/"/g,'&quot;')}" placeholder="Title..."/>
+      <button class="btn btn-success" onclick="saveNote()">Save</button>
+      <button class="btn btn-danger" onclick="deleteNote()">🗑️</button>
+    </div>
+    <textarea class="notes-content" id="noteContent" placeholder="Write your note here...">${(activeNote.content||'').replace(/</g,'&lt;')}</textarea>
+  `;
+}
+function selectNote(id) { activeNote = notesData.find(n => n.id === id); drawNotesList(); drawNoteEditor(); }
+async function newNote() {
+  const r = await fetch('/api/notes', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title:'New Note', content:'' }) });
+  const n = await r.json();
+  notesData.unshift(n); activeNote = n; drawNotesList(); drawNoteEditor();
+}
+async function saveNote() {
+  const title = document.getElementById('noteTitle').value;
+  const content = document.getElementById('noteContent').value;
+  const r = await fetch(`/api/notes/${activeNote.id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title, content }) });
+  const updated = await r.json();
+  const i = notesData.findIndex(n => n.id === activeNote.id);
+  notesData[i] = updated; activeNote = updated;
+  drawNotesList();
+  alert('✅ Note saved!');
+}
+async function deleteNote() {
+  if (!confirm('Delete this note?')) return;
+  await fetch(`/api/notes/${activeNote.id}`, { method: 'DELETE' });
+  notesData = notesData.filter(n => n.id !== activeNote.id);
+  activeNote = null;
+  drawNotesList(); drawNoteEditor();
+}
+
+// ==================== TASKS ====================
+let tasksData = [];
+async function renderTasks(c) {
+  try { tasksData = await (await fetch('/api/tasks')).json(); } catch { tasksData = []; }
+  const cols = [
+    { id: 'todo', title: '📋 To Do', color: '#6366f1' },
+    { id: 'in-progress', title: '🚀 In Progress', color: '#f59e0b' },
+    { id: 'done', title: '✅ Done', color: '#10b981' },
+  ];
+  c.innerHTML = `
+    <div class="task-input">
+      <input id="taskInput" placeholder="Add new task..." onkeydown="if(event.key==='Enter')addTask()"/>
+      <button class="btn" onclick="addTask()">+ Add</button>
+    </div>
+    <div class="cols">
+      ${cols.map(col => `
+        <div class="col" style="border-top-color:${col.color}">
+          <h3>${col.title} <span>${tasksData.filter(t => t.status === col.id).length}</span></h3>
+          <div class="tlist">
+            ${tasksData.filter(t => t.status === col.id).map(t => `
+              <div class="tcard">
+                <span>${t.title.replace(/</g,'&lt;')}</span>
+                <div class="tacts">
+                  ${col.id !== 'todo' ? `<button onclick="moveTask('${t.id}','${col.id === 'in-progress' ? 'todo' : 'in-progress'}')">⬅️</button>` : ''}
+                  ${col.id !== 'done' ? `<button onclick="moveTask('${t.id}','${col.id === 'todo' ? 'in-progress' : 'done'}')">➡️</button>` : ''}
+                  <button onclick="deleteTask('${t.id}')">🗑️</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
+}
+async function addTask() {
+  const inp = document.getElementById('taskInput');
+  const title = inp.value.trim();
+  if (!title) return;
+  const r = await fetch('/api/tasks', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ title }) });
+  await r.json(); inp.value = ''; renderApp();
+}
+async function moveTask(id, status) {
+  await fetch(`/api/tasks/${id}`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status }) });
+  renderApp();
+}
+async function deleteTask(id) {
+  await fetch(`/api/tasks/${id}`, { method:'DELETE' });
+  renderApp();
+}
+
+// ==================== CODE PLAYGROUND ====================
+let pgState = { tab: 'html', html: '<h1>Hello World! 👋</h1>\n<p>Edit me and see live!</p>', css: 'body { background: #1a1a2e; color: #eee; font-family: sans-serif; padding: 30px; }\nh1 { color: #6366f1; }', js: 'console.log("JS running!");' };
+function renderPlayground(c) {
+  c.innerHTML = `
+    <div class="runner">
+      <div class="tabs">
+        ${['html','css','js','output'].map(t => `<button class="${pgState.tab===t?'active':''}" onclick="pgSetTab('${t}')">${t.toUpperCase()}</button>`).join('')}
+        <button class="run-btn" onclick="pgSetTab('output')">▶ Run</button>
+      </div>
+      <div id="pgBody"></div>
+    </div>
+  `;
+  drawPg();
+}
+function pgSetTab(t) { pgState.tab = t; renderPlayground(document.getElementById('content')); }
+function drawPg() {
+  const body = document.getElementById('pgBody');
+  if (pgState.tab === 'output') {
+    const src = `<html><head><style>${pgState.css}</style></head><body>${pgState.html}<script>${pgState.js}<\/script></body></html>`;
+    body.innerHTML = `<iframe class="preview" srcdoc="${src.replace(/"/g,'&quot;')}" sandbox="allow-scripts"></iframe>`;
+  } else {
+    body.innerHTML = `<textarea class="editor" id="pgEditor" spellcheck="false">${pgState[pgState.tab].replace(/</g,'&lt;')}</textarea>`;
+    document.getElementById('pgEditor').oninput = (e) => { pgState[pgState.tab] = e.target.value; };
+  }
+}
+
+// ==================== CODE RUNNERS ====================
+let runnerCode = {};
+function renderRunner(c, title, lang, defaultCode) {
+  if (!runnerCode[lang]) runnerCode[lang] = defaultCode;
+  c.innerHTML = `
+    <div class="runner">
+      <div class="tabs">
+        <span style="padding:12px 20px;font-weight:600">${title}</span>
+        <button class="run-btn" onclick="runCode('${lang}')" id="runBtn">▶ Run</button>
+      </div>
+      <textarea class="editor" id="codeEditor" spellcheck="false">${runnerCode[lang].replace(/</g,'&lt;')}</textarea>
+      <pre class="output" id="codeOutput">Click "Run" to execute...</pre>
+    </div>
+  `;
+  document.getElementById('codeEditor').oninput = (e) => { runnerCode[lang] = e.target.value; };
+}
+async function runCode(lang) {
+  const btn = document.getElementById('runBtn');
+  const out = document.getElementById('codeOutput');
+  btn.disabled = true; btn.textContent = '⏳ Running...';
+  out.textContent = 'Running...';
+  try {
+    const r = await fetch(`/api/execute/${lang}`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ code: runnerCode[lang] }) });
+    const d = await r.json();
+    let text = d.output || '';
+    if (d.error) text += '\n⚠️ ' + d.error;
+    text += `\n\n[Exit code: ${d.exitCode}]`;
+    out.textContent = text || '(no output)';
+  } catch (e) { out.textContent = '⚠️ Server error: ' + e.message; }
+  btn.disabled = false; btn.textContent = '▶ Run';
+}
+
+// ==================== WEATHER ====================
+async function renderWeather(c) {
+  c.innerHTML = `
+    <div class="weather-wrap">
+      <div class="w-search">
+        <input id="wcity" placeholder="Enter city..." value="Delhi" onkeydown="if(event.key==='Enter')getWeather()"/>
+        <button class="btn" onclick="getWeather()">🔍 Search</button>
+      </div>
+      <div id="wResult"></div>
+    </div>
+  `;
+  getWeather();
+}
+async function getWeather() {
+  const city = document.getElementById('wcity').value.trim();
+  const res = document.getElementById('wResult');
+  if (!city) return;
+  res.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px">Loading...</div>';
+  try {
+    const r = await fetch(`/api/weather?city=${encodeURIComponent(city)}`);
+    const d = await r.json();
+    if (d.error || !d.current_condition) throw new Error(d.error || 'No data');
+    const cur = d.current_condition[0];
+    const area = d.nearest_area?.[0]?.areaName?.[0]?.value || city;
+    res.innerHTML = `
+      <div class="w-card">
+        <div class="w-city">📍 ${area}</div>
+        <div class="w-temp">${cur.temp_C}°C</div>
+        <div class="w-desc">${cur.weatherDesc[0].value}</div>
+        <div class="w-details">
+          <div>💨 ${cur.windspeedKmph} km/h</div>
+          <div>💧 ${cur.humidity}%</div>
+          <div>👁 ${cur.visibility} km</div>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    res.innerHTML = `<div style="text-align:center;color:#ef4444;padding:20px">⚠️ ${e.message}</div>`;
+  }
+}
+
+// ==================== CALCULATOR ====================
+let calcState = { display: '0', eq: '', mode: 'calc', from: 'USD', to: 'INR', amt: '1', result: '' };
+function renderCalc(c) {
+  c.innerHTML = `
+    <div class="calc">
+      <div class="calc-tabs">
+        <button class="${calcState.mode==='calc'?'active':''}" onclick="calcMode('calc')">Calculator</button>
+        <button class="${calcState.mode==='currency'?'active':''}" onclick="calcMode('currency')">Currency</button>
+      </div>
+      <div id="calcBody"></div>
+    </div>
+  `;
+  drawCalc();
+}
+function calcMode(m) { calcState.mode = m; renderCalc(document.getElementById('content')); }
+function drawCalc() {
+  const body = document.getElementById('calcBody');
+  if (calcState.mode === 'calc') {
+    const btns = ['7','8','9','/','4','5','6','*','1','2','3','-','0','.','=','+'];
+    body.innerHTML = `
+      <div class="calc-disp">
+        <div class="calc-eq">${calcState.eq}</div>
+        <div class="calc-v">${calcState.display}</div>
+      </div>
+      <div class="calc-btns">
+        <button class="clear" onclick="calcClear()">C</button>
+        ${btns.map(b => `<button class="${b==='='?'eq':''}" onclick="calcPress('${b}')">${b}</button>`).join('')}
+      </div>
+    `;
+  } else {
+    const curs = ['USD','EUR','GBP','INR','JPY','AUD','CAD','CNY'];
+    body.innerHTML = `
+      <div class="conv">
+        <div class="conv-row">
+          <input type="number" id="convAmt" value="${calcState.amt}"/>
+          <select id="convFrom">${curs.map(c => `<option ${c===calcState.from?'selected':''}>${c}</option>`).join('')}</select>
+        </div>
+        <div class="conv-arrow">⬇️</div>
+        <div class="conv-row">
+          <input readonly value="${calcState.result || ''}"/>
+          <select id="convTo">${curs.map(c => `<option ${c===calcState.to?'selected':''}>${c}</option>`).join('')}</select>
+        </div>
+        <button class="btn" onclick="doConvert()">💱 Convert</button>
+      </div>
+    `;
+  }
+}
+function calcPress(v) {
+  if (v === '=') {
+    try { calcState.eq = calcState.display + ' ='; calcState.display = String(eval(calcState.display)); } catch { calcState.display = 'Error'; }
+  } else {
+    if (calcState.display === '0' && v !== '.') calcState.display = v;
+    else calcState.display += v;
+  }
+  drawCalc();
+}
+function calcClear() { calcState.display = '0'; calcState.eq = ''; drawCalc(); }
+function doConvert() {
+  const rates = { USD:1, EUR:0.92, GBP:0.79, INR:83.5, JPY:149, AUD:1.54, CAD:1.36, CNY:7.24 };
+  calcState.amt = document.getElementById('convAmt').value;
+  calcState.from = document.getElementById('convFrom').value;
+  calcState.to = document.getElementById('convTo').value;
+  const r = (parseFloat(calcState.amt) / rates[calcState.from]) * rates[calcState.to];
+  calcState.result = r.toFixed(2);
+  drawCalc();
+}
+
+// ==================== URL SHORTENER ====================
+function renderShortener(c) {
+  c.innerHTML = `
+    <div class="url-wrap">
+      <h3>🔗 URL Shortener</h3>
+      <div class="url-input">
+        <input id="longUrl" placeholder="https://your-very-long-url.com/..." onkeydown="if(event.key==='Enter')shortenUrl()"/>
+        <button class="btn" onclick="shortenUrl()">Shorten</button>
+      </div>
+      <div id="urlResult"></div>
+    </div>
+  `;
+}
+async function shortenUrl() {
+  const url = document.getElementById('longUrl').value.trim();
+  if (!url) return;
+  try {
+    const r = await fetch('/api/shorten', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ url }) });
+    const d = await r.json();
+    const short = window.location.origin + d.shortUrl;
+    document.getElementById('urlResult').innerHTML = `
+      <div class="url-result">
+        <input value="${short}" readonly id="shortUrlOut"/>
+        <button class="btn" onclick="copyText('shortUrlOut', this)">📋 Copy</button>
+      </div>
+    `;
+  } catch (e) { alert('Error: ' + e.message); }
+}
+function copyText(id, btn) {
+  const el = document.getElementById(id);
+  el.select(); document.execCommand('copy');
+  const orig = btn.textContent; btn.textContent = '✅ Copied!';
+  setTimeout(() => btn.textContent = orig, 1500);
+}
+
+// ==================== PASSWORD ====================
+let passOpts = { length: 16, upper: true, lower: true, numbers: true, symbols: true, password: '' };
+function renderPassword(c) {
+  c.innerHTML = `
+    <div class="pass-wrap">
+      <h3>🔐 Password Generator</h3>
+      <div class="pass-disp">
+        <input id="passOut" value="${passOpts.password}" readonly/>
+        <button class="btn" onclick="copyText('passOut', this)">📋</button>
+        <button class="btn btn-success" onclick="genPass()">🔄</button>
+      </div>
+      <div class="pass-strength">
+        <div class="strength-bar"><div id="strBar"></div></div>
+        <span id="strLbl"></span>
+      </div>
+      <div class="pass-opts">
+        <label>Length: <span id="lenVal">${passOpts.length}</span><input type="range" min="4" max="40" value="${passOpts.length}" oninput="passOpts.length=+this.value;document.getElementById('lenVal').innerText=this.value;genPass()"/></label>
+        ${['upper','lower','numbers','symbols'].map(k => `
+          <label><input type="checkbox" ${passOpts[k]?'checked':''} onchange="passOpts.${k}=this.checked;genPass()"/>${k[0].toUpperCase()+k.slice(1)}case letters/symbols</label>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  genPass();
+}
+function genPass() {
+  const chars = [
+    ...(passOpts.upper?'ABCDEFGHIJKLMNOPQRSTUVWXYZ':''),
+    ...(passOpts.lower?'abcdefghijklmnopqrstuvwxyz':''),
+    ...(passOpts.numbers?'0123456789':''),
+    ...(passOpts.symbols?'!@#$%^&*()_+-=[]{}':''),
+  ];
+  if (!chars.length) return;
+  let p = '';
+  for (let i=0; i<passOpts.length; i++) p += chars[Math.floor(Math.random()*chars.length)];
+  passOpts.password = p;
+  const out = document.getElementById('passOut'); if (out) out.value = p;
+  // strength
+  let score = 0;
+  if (passOpts.length >= 8) score++; if (passOpts.length >= 16) score++;
+  if (passOpts.upper) score++; if (passOpts.lower) score++;
+  if (passOpts.numbers) score++; if (passOpts.symbols) score++;
+  const lvl = score <= 3 ? {l:'Weak',c:'#ef4444',w:33} : score <= 5 ? {l:'Medium',c:'#f59e0b',w:66} : {l:'Strong',c:'#10b981',w:100};
+  const bar = document.getElementById('strBar'); const lbl = document.getElementById('strLbl');
+  if (bar) { bar.style.width = lvl.w+'%'; bar.style.background = lvl.c; }
+  if (lbl) { lbl.textContent = lvl.l; lbl.style.color = lvl.c; }
+}
+
+// ==================== MARKDOWN ====================
+let mdText = `# Hello Markdown! 👋
+
+## Features
+- **Bold** and *italic*
+- [Links](https://example.com)
+- Code snippets: \`console.log('hi')\`
+
+\`\`\`js
+function hello() {
+  console.log("Hello!");
+}
+\`\`\`
+
+> This is a blockquote.
+
+### Lists
+1. First
+2. Second
+3. Third`;
+
+function renderMarkdown(c) {
+  c.innerHTML = `
+    <div class="md-wrap">
+      <div class="md-pane">
+        <h4>📝 EDITOR</h4>
+        <textarea id="mdIn">${mdText.replace(/</g,'&lt;')}</textarea>
+      </div>
+      <div class="md-pane">
+        <h4>👁 PREVIEW</h4>
+        <div class="md-preview" id="mdOut"></div>
+      </div>
+    </div>
+  `;
+  const inp = document.getElementById('mdIn');
+  inp.oninput = (e) => { mdText = e.target.value; renderMd(); };
+  renderMd();
+}
+function renderMd() {
+  let h = mdText
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+    .replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>)/g, '<ul>$1</ul>')
+    .replace(/\n\n/g, '<br/><br/>');
+  const out = document.getElementById('mdOut');
+  if (out) out.innerHTML = h;
+}
+
+// Start
+render();
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v4513226cdae34746b4dedf0b4dfa099e1781791509496" integrity="sha512-ZE9pZaUXND66v380QUtch/5sE9tPFh2zg45pR2PB0CVkCtOREv2AJKkSidISWkysEuQ0EH8faUU5du78bx87UQ==" data-cf-beacon='{"version":"2024.11.0","token":"3279d41ec7804124a29acc6e692f9a2b"}' crossorigin="anonymous"></script>
+</body>
+</html>
